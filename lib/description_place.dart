@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 
 class DescriptionPlace extends StatelessWidget{
+  //variables
+  String textoTitulo;
+  int cantidadEstrellas;
+  String textoDescripcion;
+
+  DescriptionPlace(this.textoTitulo,this.cantidadEstrellas, this.textoDescripcion);
   @override
   Widget build(BuildContext context) {
 
@@ -9,8 +15,9 @@ class DescriptionPlace extends StatelessWidget{
         right: 20
       ),
       child: Text(
-          "Duwili Ella",
+          textoTitulo,
            style: TextStyle(
+             fontFamily: "Lato",
              fontSize: 38,
              fontWeight: FontWeight.bold
       ),
@@ -36,15 +43,18 @@ class DescriptionPlace extends StatelessWidget{
         color: Colors.black54,
       ),
     );
+    //fila estrellas
+    List<Container> estrellas= [];
+    for(int i=0; i<5; i++){
+      if(i<cantidadEstrellas){
+        estrellas.add(estrella);
+      }else {
+        estrellas.add(estrellaBorde);
+      }
+    }
 
     final filaEstrellas= Row(
-      children: <Widget>[
-        estrella,
-        estrella,
-        estrella,
-        estrella,
-        estrellaBorde
-      ],
+      children: estrellas,
     );
 
     final filaTitulo = Row(
@@ -59,8 +69,9 @@ class DescriptionPlace extends StatelessWidget{
         top: 10
       ),
       child: Text(
-        "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+        textoDescripcion,
         style: TextStyle(
+          fontFamily: "Lato",
           color: Colors.black54
         ) ,
       ),
