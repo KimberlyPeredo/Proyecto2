@@ -20,7 +20,7 @@ class DescriptionPlace extends StatelessWidget{
              fontFamily: "Lato",
              fontSize: 38,
              fontWeight: FontWeight.bold
-      ),
+            ),
       ),
     );
 
