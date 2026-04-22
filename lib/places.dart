@@ -4,6 +4,8 @@ import 'package:places/profile_places.dart';
 import 'package:places/search_places.dart';
 
 class Places extends StatefulWidget {
+  final String username;
+  Places({required this.username});
   @override
   State<StatefulWidget> createState() {
     return _Places();
@@ -11,12 +13,21 @@ class Places extends StatefulWidget {
 }
 
 class _Places extends State<Places> {
+
   int currentIndex = 0;
-  List<Widget> pantallas = <Widget>[
-    MyHome(),
-    SearchPlaces(),
-    ProfilePlaces(),
-  ];
+
+  late List<Widget> pantallas;
+
+  @override
+  void initState() {
+    super.initState();
+
+    pantallas = [
+      MyHome(),
+      SearchPlaces(),
+      ProfilePlaces(username: widget.username), // 🔥 AQUÍ
+    ];
+  }
 
   void cambiarPantalla(int index) {
     //setState() actualiza nuestro widget

@@ -39,6 +39,7 @@ class CardImage extends StatelessWidget {
 
     //stack
     final cardImage = Stack(
+      clipBehavior: Clip.none,
       alignment: Alignment(0.7, 0.95),
       children: <Widget>[
         card,

@@ -10,7 +10,7 @@ class MyHome extends StatelessWidget{
   Widget build(BuildContext context) {
     final descriptionPlace =Container(
       margin: EdgeInsets.only(
-        top: 300,
+        top: 290,
         left: 30,
         right: 30
       ),
