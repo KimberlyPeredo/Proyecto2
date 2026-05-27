@@ -3,7 +3,10 @@ import 'login_page.dart';
 
 class ProfilePlaces extends StatelessWidget {
   final String username;
-  ProfilePlaces({required this.username});
+  const ProfilePlaces({
+    super.key,
+    required this.username,
+  });
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -13,6 +16,7 @@ class ProfilePlaces extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // AVATAR
               CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.white,
@@ -22,35 +26,55 @@ class ProfilePlaces extends StatelessWidget {
                   color: Colors.blue,
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
+              // USUARIO
               Text(
                 username,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 22,
+                style: const TextStyle(
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
-              SizedBox(height: 40),
+              const SizedBox(height: 10),
+              const Text(
+                "Bienvenido a Places App",
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 40),
+              // BOTON CERRAR SESION
               SizedBox(
+
                 width: 220,
-                child: ElevatedButton(
+
+                child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 15),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 15,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   onPressed: () {
-                    Navigator.pushAndRemoveUntil(
+                    Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => LoginPage(),
+                        builder: (context) => const LoginPage(),
                       ),
-                          (route) => false,
                     );
+
                   },
-                  child: Text("Cerrar sesión"),
+                  icon: const Icon(Icons.logout),
+                  label: const Text(
+                    "Cerrar sesión",
+                  ),
                 ),
               ),
             ],
