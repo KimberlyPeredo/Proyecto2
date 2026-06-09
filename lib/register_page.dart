@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http; // IMPORTANTE: Agregado para conexión
-import 'dart:convert'; // IMPORTANTE: Agregado para convertir a formato JSON
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
+
   @override
   State<RegisterPage> createState() => _RegisterPageState();
 }
 
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
-
   final nombreController = TextEditingController();
   final apellidoController = TextEditingController();
   final correoController = TextEditingController();
@@ -20,50 +22,83 @@ class _RegisterPageState extends State<RegisterPage> {
   bool ocultar1 = true;
   bool ocultar2 = true;
 
-  // FUNCIÓN QUE CONECTA CON TU SERVIDOR
   Future<void> registrarUsuario() async {
-    final url = Uri.parse('http://api.kptechsoport.com/api/register');
+    if (!_formKey.currentState!.validate()) return;
+
+    if (passwordController.text != confirmarController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Las contraseñas no coinciden")),
+      );
+      return;
+    }
+
+    final baseUrl = "http://127.0.0.1:8000";
+
+    final url = Uri.parse('$baseUrl/api/register');
 
     try {
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'name': nombreController.text,
-          'apellido': apellidoController.text,
-          'email': correoController.text,
-          'username': usuarioController.text,
-          'password': passwordController.text,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'nombre': nombreController.text.trim(),
+          'apellido': apellidoController.text.trim(),
+          'correo': correoController.text.trim(),
+          'usuario': usuarioController.text.trim(),
+          'contrasena': passwordController.text.trim(),
         }),
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Cuenta creada correctamente en el servidor")),
-          );
-          Navigator.pop(context);
-        }
-      } else {
-        print("Error del servidor: ${response.body}");
+      print("STATUS: ${response.statusCode}");
+      print("BODY: ${response.body}");
+
+      if (response.body.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${response.statusCode}")),
+          const SnackBar(content: Text("Respuesta vacía del servidor")),
+        );
+        return;
+      }
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data["message"] ?? "Usuario creado correctamente"),
+          ),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data["message"] ?? "Error al registrar usuario"),
+          ),
         );
       }
     } catch (e) {
-      print("Error de conexión: $e");
+      print("ERROR REAL: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("No se pudo conectar al servidor")),
+        const SnackBar(content: Text("No se pudo conectar al servidor")),
       );
     }
   }
-
+  @override
+  void dispose() {
+    nombreController.dispose();
+    apellidoController.dispose();
+    correoController.dispose();
+    usuarioController.dispose();
+    passwordController.dispose();
+    confirmarController.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Crear cuenta"),
-      ),
+      appBar: AppBar(title: const Text("Crear cuenta")),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -71,62 +106,97 @@ class _RegisterPageState extends State<RegisterPage> {
             key: _formKey,
             child: Column(
               children: [
-                SizedBox(height: 20),
-                Icon(Icons.person_add, size: 80, color: Color(0xFF574ACF)),
-                SizedBox(height: 20),
-                TextFormField(controller: nombreController, decoration: InputDecoration(labelText: "Nombre", border: OutlineInputBorder())),
-                SizedBox(height: 15),
-                TextFormField(controller: apellidoController, decoration: InputDecoration(labelText: "Apellido", border: OutlineInputBorder())),
-                SizedBox(height: 15),
-                TextFormField(controller: correoController, decoration: InputDecoration(labelText: "Correo", border: OutlineInputBorder())),
-                SizedBox(height: 15),
-                TextFormField(controller: usuarioController, decoration: InputDecoration(labelText: "Usuario", border: OutlineInputBorder())),
-                SizedBox(height: 15),
+                const Icon(Icons.person_add,
+                    size: 80, color: Colors.deepPurple),
+
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: nombreController,
+                  validator: (value) =>
+                  value!.isEmpty ? "Ingrese nombre" : null,
+                  decoration: const InputDecoration(
+                    labelText: "Nombre",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+                TextFormField(
+                  controller: apellidoController,
+                  validator: (value) =>
+                  value!.isEmpty ? "Ingrese apellido" : null,
+                  decoration: const InputDecoration(
+                    labelText: "Apellido",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+                TextFormField(
+                  controller: correoController,
+                  validator: (value) =>
+                  value!.isEmpty ? "Ingrese correo" : null,
+                  decoration: const InputDecoration(
+                    labelText: "Correo",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+                TextFormField(
+                  controller: usuarioController,
+                  validator: (value) =>
+                  value!.isEmpty ? "Ingrese usuario" : null,
+                  decoration: const InputDecoration(
+                    labelText: "Usuario",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+
+                const SizedBox(height: 15),
                 TextFormField(
                   controller: passwordController,
                   obscureText: ocultar1,
+                  validator: (value) =>
+                  value!.isEmpty ? "Ingrese contraseña" : null,
                   decoration: InputDecoration(
                     labelText: "Contraseña",
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
-                      icon: Icon(ocultar1 ? Icons.visibility : Icons.visibility_off),
-                      onPressed: () => setState(() => ocultar1 = !ocultar1),
+                      icon: Icon(
+                        ocultar1 ? Icons.visibility : Icons.visibility_off,
+                      ),
+                      onPressed: () =>
+                          setState(() => ocultar1 = !ocultar1),
                     ),
                   ),
                 ),
-                SizedBox(height: 15),
+
+                const SizedBox(height: 15),
                 TextFormField(
                   controller: confirmarController,
                   obscureText: ocultar2,
+                  validator: (value) =>
+                  value!.isEmpty ? "Confirme contraseña" : null,
                   decoration: InputDecoration(
                     labelText: "Confirmar contraseña",
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
-                      icon: Icon(ocultar2 ? Icons.visibility : Icons.visibility_off),
-                      onPressed: () => setState(() => ocultar2 = !ocultar2),
+                      icon: Icon(
+                        ocultar2 ? Icons.visibility : Icons.visibility_off,
+                      ),
+                      onPressed: () =>
+                          setState(() => ocultar2 = !ocultar2),
                     ),
                   ),
                 ),
-                SizedBox(height: 30),
+
+                const SizedBox(height: 30),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF574ACF),
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(vertical: 15),
-                    ),
-                    onPressed: () {
-                      // Validación antes de enviar
-                      if (passwordController.text == confirmarController.text) {
-                        registrarUsuario(); // LLAMADA A LA FUNCIÓN DE CONEXIÓN
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Las contraseñas no coinciden")),
-                        );
-                      }
-                    },
-                    child: Text("Crear cuenta"),
+                    onPressed: registrarUsuario,
+                    child: const Text("Crear cuenta"),
                   ),
                 )
               ],

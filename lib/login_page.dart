@@ -1,4 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:io' show Platform;
+
 import 'package:places/places_cupertino.dart';
 import 'register_page.dart';
 
@@ -10,7 +15,6 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-
   final _formKey = GlobalKey<FormState>();
 
   final usuarioController = TextEditingController();
@@ -18,72 +22,108 @@ class _LoginPageState extends State<LoginPage> {
 
   bool ocultarPassword = true;
 
-  void login() {
+  void login() async {
+    print("CLICK LOGIN");
 
-    if (_formKey.currentState!.validate()) {
+    if (!_formKey.currentState!.validate()) return;
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PlacesCupertino(
-            username: usuarioController.text,
-          ),
-        ),
+    final baseUrl = kIsWeb
+        ? "http://localhost:8000"
+        : (Platform.isWindows
+        ? "http://127.0.0.1:8000"
+        : "http://10.0.2.2:8000");
+
+    final url = Uri.parse('$baseUrl/api/login');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: jsonEncode({
+          'usuario': usuarioController.text.trim(),
+          'contrasena': passwordController.text.trim(),
+        }),
       );
 
-    }
+      print("STATUS: ${response.statusCode}");
+      print("BODY: ${response.body}");
 
+      if (response.body.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Respuesta vacía del servidor")),
+        );
+        return;
+      }
+
+      final data = jsonDecode(response.body);
+
+      if (data["success"] == true ||
+          data["success"].toString() == "true") {
+        print("LOGIN OK → navegando");
+
+        if (!mounted) return;
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PlacesCupertino(
+              username: data["usuario"],
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data["message"] ?? "Error en login"),
+          ),
+        );
+      }
+    } catch (e) {
+      print("ERROR LOGIN: $e");
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error de conexión: $e")),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    usuarioController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-
       body: Container(
-
         width: double.infinity,
         height: double.infinity,
-
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xFF6A11CB),
-              Color(0xFF2575FC),
-            ],
+            colors: [Color(0xFF6A11CB), Color(0xFF2575FC)],
           ),
         ),
-
         child: Center(
-
           child: SingleChildScrollView(
-
             child: Container(
-
               margin: const EdgeInsets.all(20),
               padding: const EdgeInsets.all(25),
-
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(25),
               ),
-
               child: Form(
-
                 key: _formKey,
-
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-
                   children: [
-
-                    const Icon(
-                      Icons.location_on,
-                      size: 80,
-                    ),
-
+                    const Icon(Icons.location_on, size: 80),
                     const SizedBox(height: 10),
-
                     const Text(
                       "Places App",
                       style: TextStyle(
@@ -91,164 +131,95 @@ class _LoginPageState extends State<LoginPage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     const SizedBox(height: 20),
 
-                    // USUARIO
                     TextFormField(
-
                       controller: usuarioController,
-
-                      validator: (value) {
-
-                        if(value == null || value.isEmpty){
-                          return "Ingrese usuario";
-                        }
-
-                        if(value.contains(" ")){
-                          return "Sin espacios";
-                        }
-
-                        return null;
-                      },
-
+                      validator: (value) =>
+                      value!.isEmpty ? "Ingrese usuario" : null,
                       decoration: InputDecoration(
-
                         labelText: "Usuario",
-
                         prefixIcon: const Icon(Icons.person),
-
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-
                       ),
                     ),
 
                     const SizedBox(height: 15),
 
-                    // PASSWORD
                     TextFormField(
-
                       controller: passwordController,
-
                       obscureText: ocultarPassword,
-
-                      validator: (value) {
-
-                        if(value == null || value.isEmpty){
-                          return "Ingrese contraseña";
-                        }
-
-                        if(value.length < 6){
-                          return "Mínimo 6 caracteres";
-                        }
-
-                        return null;
-                      },
-
+                      validator: (value) =>
+                      value!.isEmpty ? "Ingrese contraseña" : null,
                       decoration: InputDecoration(
-
                         labelText: "Contraseña",
-
                         prefixIcon: const Icon(Icons.lock),
-
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-
                         suffixIcon: IconButton(
-
                           icon: Icon(
                             ocultarPassword
                                 ? Icons.visibility
                                 : Icons.visibility_off,
                           ),
-
                           onPressed: () {
-
                             setState(() {
                               ocultarPassword = !ocultarPassword;
                             });
-
                           },
                         ),
                       ),
                     ),
 
-                    // OLVIDE PASSWORD
+                    const SizedBox(height: 5),
+
+                    // 🔥 AQUÍ ESTÁ LO QUE PEDISTE
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-
                         onPressed: () {
-
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                "Próximamente disponible",
-                              ),
+                            const SnackBar(
+                              content: Text("Próximamente"),
                             ),
                           );
-
                         },
-
-                        child: const Text(
-                          "¿Olvidaste tu contraseña?",
-                        ),
+                        child: const Text("¿Olvidaste tu contraseña?"),
                       ),
                     ),
 
                     const SizedBox(height: 10),
 
-                    // BOTON LOGIN
                     SizedBox(
-
                       width: double.infinity,
-
                       child: FilledButton(
-
                         onPressed: login,
-
-                        child: const Text(
-                          "Ingresar",
-                        ),
+                        child: const Text("Ingresar"),
                       ),
                     ),
 
                     const SizedBox(height: 15),
 
-                    // CREAR CUENTA
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-
                       children: [
-
-                        const Text(
-                          "¿No tienes cuenta?",
-                        ),
-
+                        const Text("¿No tienes cuenta?"),
                         TextButton(
-
                           onPressed: () {
-
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => RegisterPage(),
                               ),
                             );
-
                           },
-
-                          child: const Text(
-                            "Crear cuenta",
-                          ),
+                          child: const Text("Crear cuenta"),
                         ),
-
                       ],
-                    )
-
+                    ),
                   ],
                 ),
               ),
