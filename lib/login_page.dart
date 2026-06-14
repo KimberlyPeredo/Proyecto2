@@ -60,8 +60,7 @@ class _LoginPageState extends State<LoginPage> {
 
       final data = jsonDecode(response.body);
 
-      if (data["success"] == true ||
-          data["success"].toString() == "true") {
+      if (data["success"] == true || data["success"].toString() == "true") {
         print("LOGIN OK → navegando");
 
         if (!mounted) return;
@@ -132,11 +131,9 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-
                     TextFormField(
                       controller: usuarioController,
-                      validator: (value) =>
-                      value!.isEmpty ? "Ingrese usuario" : null,
+                      validator: (value) => value!.isEmpty ? "Ingrese usuario" : null,
                       decoration: InputDecoration(
                         labelText: "Usuario",
                         prefixIcon: const Icon(Icons.person),
@@ -145,14 +142,11 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 15),
-
                     TextFormField(
                       controller: passwordController,
                       obscureText: ocultarPassword,
-                      validator: (value) =>
-                      value!.isEmpty ? "Ingrese contraseña" : null,
+                      validator: (value) => value!.isEmpty ? "Ingrese contraseña" : null,
                       decoration: InputDecoration(
                         labelText: "Contraseña",
                         prefixIcon: const Icon(Icons.lock),
@@ -161,9 +155,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            ocultarPassword
-                                ? Icons.visibility
-                                : Icons.visibility_off,
+                            ocultarPassword ? Icons.visibility : Icons.visibility_off,
                           ),
                           onPressed: () {
                             setState(() {
@@ -173,26 +165,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
-
-                    const SizedBox(height: 5),
-
-                    // 🔥 AQUÍ ESTÁ LO QUE PEDISTE
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Próximamente"),
-                            ),
-                          );
-                        },
-                        child: const Text("¿Olvidaste tu contraseña?"),
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
+                    const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(
@@ -200,9 +173,6 @@ class _LoginPageState extends State<LoginPage> {
                         child: const Text("Ingresar"),
                       ),
                     ),
-
-                    const SizedBox(height: 15),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -212,7 +182,7 @@ class _LoginPageState extends State<LoginPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => RegisterPage(),
+                                builder: (context) => const RegisterPage(),
                               ),
                             );
                           },
